@@ -1,0 +1,18 @@
+# secrets
+.env
+.env.*
+!.env.example
+# footage and tracking output stay on your machine
+*.mp4
+*.mov
+*.MOV
+*.m4v
+*.webm
+*.sam
+rally*/
+out/
+# python
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

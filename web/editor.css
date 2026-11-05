@@ -1,0 +1,60 @@
+:root {
+  --bg: #0b0f0d;
+  --panel: #131a16;
+  --line: #24302a;
+  --text: #e9f1ec;
+  --muted: #8a9a91;
+  --accent: #c6ff3d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; letter-spacing: .02em; }
+.brand span { color: var(--muted); font-weight: 400; margin-left: 8px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; padding: 16px 20px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+.stage-wrap {
+  position: relative; background: #000; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+.stage-wrap.drag { outline: 2px dashed var(--accent); outline-offset: -6px; }
+#stage { width: 100%; height: 100%; display: block; object-fit: contain; cursor: crosshair; }
+.empty {
+  position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px;
+  background: radial-gradient(circle at 50% 40%, #16211b, #070908);
+}
+.empty p { margin: 4px 0; }
+.transport { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.transport input[type=range] { flex: 1; accent-color: var(--accent); }
+.btn {
+  background: #1c2620; color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 14px; font: inherit; cursor: pointer;
+}
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); color: #0b0f0d; border-color: var(--accent); font-weight: 600; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 16px 16px; }
+.panel h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 16px 0 8px; }
+.panel label { display: flex; gap: 8px; align-items: center; margin: 6px 0; cursor: pointer; }
+.panel input[type=checkbox] { accent-color: var(--accent); }
+.row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
+select { background: #0e1411; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; font: inherit; }
+.players .p { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 6px; border-radius: 6px; }
+.players .p.sel { background: #1f2b24; }
+.players .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; background: #555; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; text-transform: none; letter-spacing: 0; }
+.status { min-height: 1.4em; margin: 8px 0 0; }
+code { background: #1a221e; padding: 1px 5px; border-radius: 4px; }
+/* the source video stays in the render tree (so frame callbacks keep firing) but out of sight */
+.source { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }

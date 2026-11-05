@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Badminton Editor</title>
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Badminton Editor <span>SAM 3.1 tracking + match HUD</span></div>
+  <label class="btn primary">Open files
+    <input id="files" type="file" multiple accept="video/*,.sam,.json,application/json" hidden>
+  </label>
+</header>
+
+<main class="layout">
+  <section class="viewer">
+    <div id="drop" class="stage-wrap">
+      <canvas id="stage" width="1280" height="720"></canvas>
+      <div id="empty" class="empty">
+        <p><b>Drop a rally here</b></p>
+        <p>clip.mp4 + person.sam (from <code>python -m badminton_editor track</code>), optional meta.json and match.json.</p>
+        <p class="muted">Everything stays in this browser tab. Nothing is uploaded.</p>
+      </div>
+    </div>
+    <video id="video" class="source" playsinline muted></video>
+    <div class="transport">
+      <button id="play" class="btn" disabled>Play</button>
+      <input id="seek" type="range" min="0" max="1000" value="0" disabled>
+      <span id="clock" class="mono">0:00.0</span>
+      <button id="export" class="btn" disabled title="Records the canvas while the clip plays once">Export video</button>
+    </div>
+    <p id="status" class="status muted"></p>
+  </section>
+
+  <aside class="panel">
+    <h3>Effects (SAM 3.1 masks)</h3>
+    <label><input type="checkbox" data-fx="spotlight" checked> Spotlight the players</label>
+    <label><input type="checkbox" data-fx="outline" checked> Player glow outline</label>
+    <label><input type="checkbox" data-fx="hideOthers" checked> Blur everyone else</label>
+    <label><input type="checkbox" data-fx="objects" checked> Extra tracks (racket, net...)</label>
+
+    <h3>HUD</h3>
+    <label><input type="checkbox" data-fx="hud" checked> Score and stats</label>
+    <label><input type="checkbox" data-fx="inset" checked> Player focus inset</label>
+    <div class="row">
+      <span>Style</span>
+      <select id="theme">
+        <option value="broadcast">Broadcast glass</option>
+        <option value="neon">Neon</option>
+        <option value="led">Retro LED</option>
+      </select>
+    </div>
+    <div class="row">
+      <span>Focus</span>
+      <select id="focus">
+        <option>P1</option><option>P2</option><option>P3</option><option>P4</option>
+      </select>
+    </div>
+
+    <h3>Players <span class="muted small">click a person on the video to pick them</span></h3>
+    <div id="players" class="players muted small">Load a .sam file to see who SAM found.</div>
+  </aside>
+</main>
+
+<script src="sam-codec.js"></script>
+<script src="hud.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
