@@ -2,11 +2,11 @@
 
 A video editor for badminton that puts a match HUD over the footage: a title banner, a rally clock, a scoreboard for each of the four players (P1 to P4), the team score, the last shot, and a zoomed player focus inset. The players are found and followed with **Meta SAM 3.1**, so the editor can light them up, outline them and blur everyone else in the hall.
 
-This is the open part of [BaddyAI](https://baddyai.com)'s editor, made for the Meta hackathon. It runs on your machine: a small Python command talks to SAM 3.1, and the editor is a static web page.
+This is the open part of the Baddy Editor, made for the Meta hackathon. It runs on your machine: a small Python command talks to SAM 3.1, and the editor is a static web page.
 
 ![SAM 3.1 segmenting and tracking a doubles rally: four players named P1 to P4, everyone else blurred](docs/segmented-tracked-rally.gif)
 
-*A doubles rally from a public BaddyAI reel, run through this repo: SAM 3.1 segments every person in the hall and keeps their ids through the rally; the four players are tagged P1 to P4 (picked in the editor's Players panel), their masks filled, and everyone else is blurred and dimmed.*
+*A doubles rally from a public Baddy Editor reel, run through this repo: SAM 3.1 segments every person in the hall and keeps their ids through the rally; the four players are tagged P1 to P4 (picked in the editor's Players panel), their masks filled, and everyone else is blurred and dimmed.*
 
 ## What it does
 
@@ -63,7 +63,7 @@ The HUD only shows what the file contains. A value that is missing is left off, 
 {
   "title": "CIRCUIT ROYALE",
   "subtitle": "DOUBLES",
-  "brand": { "name": "BADDY", "accent": "AI", "url": "baddyai.com" },
+  "brand": { "name": "BADDY", "accent": "EDITOR" },
   "game": 1,
   "points_to_win": 21,
   "start_score": { "A": 12, "B": 9 },
@@ -99,7 +99,7 @@ docs/               the rally GIF above
 
 ## Not included
 
-This repository holds the editor only. BaddyAI's servers, accounts, rally detection, shuttle tracking, score detection and the AI chat are not part of it; bring the score and shots in `match.json` from your own notes or detector.
+This repository holds the editor only. The Baddy Editor's servers, accounts, rally detection, shuttle tracking, score detection and the AI chat are not part of it; bring the score and shots in `match.json` from your own notes or detector.
 
 ## License
 

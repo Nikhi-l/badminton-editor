@@ -19,11 +19,11 @@ import requests
 
 COMMON = ("16:9 widescreen video frame of an indoor badminton doubles match filmed from behind one baseline, "
           "four players on court, with a HUD overlay drawn on top. The HUD has: a title banner reading "
-          "'BADDYAI MATCH HUD', four player scoreboards labelled only P1, P2, P3 and P4 (team P1+P2 versus "
+          "'BADDY EDITOR MATCH HUD', four player scoreboards labelled only P1, P2, P3 and P4 (team P1+P2 versus "
           "team P3+P4) each with the game score and small stats (smashes, rally wins, shuttle speed), a rally "
           "counter and rally timer, and a picture-in-picture player focus inset that zooms on P1 with a glowing "
-          "segmentation outline. No real names, no faces in the scoreboards, no brand logos or sponsor boards, "
-          "text only in English. ")
+          "segmentation outline. No real names, no faces in the scoreboards, no brand logos, no sponsor boards, "
+          "no website addresses or URLs, text only in English. ")
 STYLES = {
     "01-broadcast-glass": "Style: premium TV sports broadcast, dark smoked-glass panels, crisp white numbers, lime green #C6FF3D accents, thin angular frames.",
     "02-neon-arcade": "Style: 8-bit arcade fighting game, pixel art panels, health-bar style score bars for each player, COMBO counter for the rally, chunky pixel font, bright magenta and cyan.",

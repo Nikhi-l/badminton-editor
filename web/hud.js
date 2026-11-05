@@ -51,7 +51,7 @@ const hud = (() => {
     }
     const hasShots = rallies.some((r) => (r.shots || []).length > 0);   // no shot data: no zero stats on the boards
     return { score, stats, rally, lastRally, rallyNo, last, server, teamOf, t, hasShots,
-      title: m.title || "BADDYAI MATCH HUD", subtitle: m.subtitle || "", game: m.game || null, brand: m.brand || null,
+      title: m.title || "BADDY EDITOR", subtitle: m.subtitle || "", game: m.game || null, brand: m.brand || null,
       target: m.points_to_win || 21, names: Object.fromEntries(PLAYERS.map((p) => [p, (info[p] || {}).name || ""])) };
   }
 
@@ -306,18 +306,23 @@ const hud = (() => {
     ctx.shadowBlur = 18 * s;
     ctx.stroke();
     ctx.restore();
-    // brand
+    // brand: two words, the second in the accent colour, shrunk to fit above the window
     const brand = st.brand || {};
-    const name = brand.name || "BADDY", accent = brand.accent || "AI";
+    const name = brand.name || "BADDY", accent = brand.accent || "EDITOR";
+    let size = 66;
     ctx.save();
-    ctx.font = `800 ${Math.round(66 * s)}px ${ROYALE.font}`;
-    if ("letterSpacing" in ctx) ctx.letterSpacing = `${4 * s}px`;
+    for (;;) {
+      ctx.font = `800 ${Math.round(size * s)}px ${ROYALE.font}`;
+      if ("letterSpacing" in ctx) ctx.letterSpacing = `${4 * s}px`;
+      if (ctx.measureText(`${name} ${accent}`).width <= 470 * s || size <= 36) break;
+      size -= 2;
+    }
     const nw = ctx.measureText(name + " ").width, aw = ctx.measureText(accent).width;
     ctx.restore();
-    const bx = 470 * s - (nw + aw) / 2;
-    text(ctx, RT, s, name + " ", bx, 96 * s, 66, { color: "#E9E9E4", weight: 800, spacing: 4 });
-    text(ctx, RT, s, accent, bx + nw, 96 * s, 66, { color: ROYALE.lime, weight: 800, spacing: 4 });
-    if (brand.url !== "") text(ctx, RT, s, brand.url || "baddyai.com", 470 * s, 136 * s, 24, { color: ROYALE.text, align: "center", weight: 600, spacing: 3 });
+    const bx = 500 * s - (nw + aw) / 2, by = brand.url ? 96 * s : 112 * s;
+    text(ctx, RT, s, name + " ", bx, by, size, { color: "#E9E9E4", weight: 800, spacing: 4 });
+    text(ctx, RT, s, accent, bx + nw, by, size, { color: ROYALE.lime, weight: 800, spacing: 4 });
+    if (brand.url) text(ctx, RT, s, brand.url, 500 * s, 136 * s, 24, { color: ROYALE.text, align: "center", weight: 600, spacing: 3 });
     // title banner
     goldPanel(ctx, s, () => slant(ctx, 790 * s, 42 * s, 1010 * s, 96 * s, 60 * s), 42 * s, 138 * s, "#0f4a37", "#062419");
     text(ctx, RT, s, `///  ${st.title}`, 1295 * s, 108 * s, 46, { color: gold(ctx, 70 * s, 110 * s), align: "center", weight: 800, spacing: 7 });

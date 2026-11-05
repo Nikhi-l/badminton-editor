@@ -3,8 +3,7 @@
   "subtitle": "SAMPLE DATA",
   "brand": {
     "name": "BADDY",
-    "accent": "AI",
-    "url": "baddyai.com"
+    "accent": "EDITOR"
   },
   "game": 1,
   "points_to_win": 21,
