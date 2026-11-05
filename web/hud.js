@@ -49,7 +49,8 @@ const hud = (() => {
         server = r.winner;  // in badminton the side that wins the rally serves next
       }
     }
-    return { score, stats, rally, lastRally, rallyNo, last, server, teamOf, t,
+    const hasShots = rallies.some((r) => (r.shots || []).length > 0);   // no shot data: no zero stats on the boards
+    return { score, stats, rally, lastRally, rallyNo, last, server, teamOf, t, hasShots,
       title: m.title || "BADDYAI MATCH HUD", subtitle: m.subtitle || "", game: m.game || null, brand: m.brand || null,
       target: m.points_to_win || 21, names: Object.fromEntries(PLAYERS.map((p) => [p, (info[p] || {}).name || ""])) };
   }
@@ -289,7 +290,7 @@ const hud = (() => {
     text(ctx, RT, s, String(stt.winners), cx, y + 278 * s, 170, { color: gold(ctx, y + 150 * s, y + 280 * s), align: "center", weight: 800 });
     text(ctx, RT, s, "POINTS WON", cx, y + 318 * s, 19, { color: ROYALE.text, align: "center", weight: 700, spacing: 3 });
     const small = [`${stt.shots} SHOT${stt.shots === 1 ? "" : "S"}`, stt.top ? `${Math.round(stt.top)} KM/H` : `${stt.smashes} SMASH${stt.smashes === 1 ? "" : "ES"}`].join("  ·  ");
-    text(ctx, RT, s, small, cx, y + 352 * s, 15, { color: ROYALE.sub, align: "center", weight: 600, spacing: 1 });
+    if (st.hasShots) text(ctx, RT, s, small, cx, y + 352 * s, 15, { color: ROYALE.sub, align: "center", weight: 600, spacing: 1 });
     if (st.server && (st.server === p || st.server === st.teamOf(p)) && (p === "P1" || p === "P3")) {
       text(ctx, RT, s, "SERVE", cx, y + 36 * s, 14, { color: ROYALE.lime, align: "center", weight: 800, spacing: 2 });
     }
