@@ -4,9 +4,9 @@ A video editor for badminton that puts a match HUD over the footage: a title ban
 
 This is the open part of [BaddyAI](https://baddyai.com)'s editor, made for the Meta hackathon. It runs on your machine: a small Python command talks to SAM 3.1, and the editor is a static web page.
 
-![HUD design concepts generated with Meta Muse Image](docs/hud-concepts-muse-image.jpg)
+![SAM 3.1 segmenting and tracking a doubles rally: four players named P1 to P4, everyone else blurred](docs/segmented-tracked-rally.gif)
 
-*HUD design concepts generated with Meta Muse Image (`muse-image-1.0`) by `tools/muse_hud_concepts.py`. The players, venue and numbers in these pictures are generated. The editor's own HUD draws real values from your match data.*
+*A doubles rally from a public BaddyAI reel, run through this repo: SAM 3.1 segments every person in the hall and keeps their ids through the rally; the four players are tagged P1 to P4 (picked in the editor's Players panel), their masks filled, and everyone else is blurred and dimmed.*
 
 ## What it does
 
@@ -15,6 +15,7 @@ This is the open part of [BaddyAI](https://baddyai.com)'s editor, made for the M
 3. **Edit** (`web/index.html`), per video frame:
    - **Spotlight**: dims everything except the four players.
    - **Glow outline**: a halo in each player's colour, cut from their SAM mask.
+   - **Mask fill** and **name tags**: shows the segmentation itself and the P1 to P4 id each player keeps through the rally.
    - **Blur everyone else**: people on other courts and passers-by are blurred out.
    - **Extra tracks**: rackets (or any other prompt) get their own glow.
    - **HUD**: title banner, rally number and clock, shots in the rally, P1 to P4 cards (shots, smashes, winners, top speed when measured), team score with the serving side, and a last-shot ticker.
@@ -52,7 +53,7 @@ Then open http://localhost:8000 and drop `rally01/clip.mp4`, `rally01/person.sam
 
 ## Cost
 
-SAM 3.1 on the Meta Model API is billed per video frame sent, per prompt (about $0.20 per 1,000 frames when this was written). A 15 s rally at 30 fps with two prompts is 900 frames, about $0.18. `track` prints the estimate first and refuses to run above `--max-usd` (default $1). Muse Image concepts cost about $0.01 each.
+SAM 3.1 on the Meta Model API is billed per video frame sent, per prompt (about $0.20 per 1,000 frames when this was written). A 15 s rally at 30 fps with two prompts is 900 frames, about $0.18. `track` prints the estimate first and refuses to run above `--max-usd` (default $1). `tools/muse_hud_concepts.py` makes HUD design concepts with Meta Muse Image (`muse-image-1.0`), about $0.01 each.
 
 ## Match data (`match.json`)
 
@@ -93,7 +94,7 @@ badminton_editor/   Python: SAM 3.1 client, mask codec, player naming, CLI (trac
 web/                the editor: index.html, editor.js (masks + effects), hud.js (HUD), sam-codec.js
 examples/           match.json sample
 tools/              muse_hud_concepts.py: HUD design concepts with Meta Muse Image
-docs/               the concept sheet above
+docs/               the rally GIF above
 ```
 
 ## Not included

@@ -19,7 +19,7 @@
     roles: new Map(),             // sam id -> "P1".."P4"
     objects: [],                  // [{ id, frames, area, feet, cx }] for the players panel
     selected: null,
-    fx: { spotlight: true, outline: true, hideOthers: true, objects: true, hud: true, inset: true },
+    fx: { spotlight: true, outline: true, fill: false, tags: true, hideOthers: true, objects: true, hud: true, inset: true },
     theme: "broadcast",
     layout: "frame",           // "frame": boards beside the video; "overlay": HUD on the video
     focus: "P1",
@@ -235,6 +235,8 @@
         ctx.save(); ctx.globalAlpha = 0.16; ctx.drawImage(L.players.c, R.x, R.y, R.w, R.h); ctx.restore();
         if (S.fx.objects && S.extra.length) { glow(L.extra.c, Math.round(S.lw / 320)); ctx.drawImage(L.glow.c, R.x, R.y, R.w, R.h); }
       }
+      if (S.fx.fill) { ctx.save(); ctx.globalAlpha = 0.42; ctx.drawImage(L.players.c, R.x, R.y, R.w, R.h); ctx.restore(); }
+      if (S.fx.tags) nameTags(boxes, R);
       if (S.selected != null) outlineBox(k, R);
       ctx.restore();
     }
@@ -256,6 +258,26 @@
     g.x.globalCompositeOperation = "destination-out";
     g.x.drawImage(src, 0, 0);
     g.x.globalCompositeOperation = "source-over";
+  }
+  // a P1..P4 tag above each tracked player, in their colour: the id SAM keeps through the rally
+  function nameTags(boxes, R) {
+    const sx = R.w / S.mw, sy = R.h / S.mh, fs = Math.max(12, Math.round(R.h * 0.03));
+    ctx.save();
+    ctx.font = `800 ${fs}px Inter, system-ui, -apple-system, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const [p, r] of Object.entries(boxes)) {
+      const cx = R.x + ((r.x1 + r.x2 + 1) / 2) * sx, top = R.y + r.y1 * sy;
+      const w = ctx.measureText(p).width + fs * 0.9, h = fs * 1.45;
+      const y = Math.max(R.y + 4, top - h - fs * 0.35);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(cx - w / 2, y, w, h, h / 2); else ctx.rect(cx - w / 2, y, w, h);
+      ctx.fillStyle = hud.COLORS[p];
+      ctx.fill();
+      ctx.fillStyle = "#0b0f0d";
+      ctx.fillText(p, cx, y + h / 2 + 1);
+    }
+    ctx.restore();
   }
   function outlineBox(k, R) {
     const r = (S.people.get(k) || []).find((x) => x.id === S.selected);
