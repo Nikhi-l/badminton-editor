@@ -23,7 +23,7 @@ const hud = (() => {
     const teamOf = (p) => (info[p] || {}).team || (p === "P1" || p === "P2" ? "A" : "B");
     const score = { A: +((m.start_score || {}).A || 0), B: +((m.start_score || {}).B || 0) };
     const stats = {};
-    PLAYERS.forEach((p) => (stats[p] = { shots: 0, smashes: 0, winners: 0, top: 0 }));
+    PLAYERS.forEach((p) => (stats[p] = { shots: 0, smashes: 0, winners: +((m.start_points || {})[p] || 0), top: 0 }));
     let rally = null, lastRally = null, rallyNo = (m.first_rally || 1) - 1, last = null;
     let server = m.first_server || null;
     const rallies = (m.rallies || []).slice().sort((a, b) => a.start - b.start);
@@ -50,7 +50,7 @@ const hud = (() => {
       }
     }
     return { score, stats, rally, lastRally, rallyNo, last, server, teamOf, t,
-      title: m.title || "BADDYAI MATCH HUD", subtitle: m.subtitle || "", game: m.game || null,
+      title: m.title || "BADDYAI MATCH HUD", subtitle: m.subtitle || "", game: m.game || null, brand: m.brand || null,
       target: m.points_to_win || 21, names: Object.fromEntries(PLAYERS.map((p) => [p, (info[p] || {}).name || ""])) };
   }
 
@@ -210,6 +210,158 @@ const hud = (() => {
     return { x: W - 36 * s - w, y: 26 * s, w, h };
   }
 
-  return { COLORS, THEMES, PLAYERS, stateAt, draw, insetFrame, insetRect, clock };
+
+  /* ---------- framed layout: the video in a window, P1/P2 boards on the left, P3/P4 on the right ---------- */
+  const ROYALE = { bg0: "#020504", bg1: "#0a1813", panel0: "#0f3d2e", panel1: "#04110c", gold0: "#FFF0B8", gold1: "#E4B95C",
+    gold2: "#9A7023", text: "#F6F2E6", sub: "#E7DDC2", lime: "#C6FF3D", font: "Inter, system-ui, -apple-system, sans-serif" };
+  const RT = { font: ROYALE.font, glow: 0, text: ROYALE.text, accent: ROYALE.gold1 };
+  function frameRect(W, H) { const s = H / 1080; return { x: 272 * s, y: 160 * s, w: 1376 * s, h: 774 * s }; }
+  function frameInsetRect(W, H) {
+    const s = H / 1080, R = frameRect(W, H), w = 300 * s, h = 330 * s;
+    return { x: R.x + R.w - w - 22 * s, y: R.y + R.h - h - 22 * s, w, h };
+  }
+  function gold(ctx, y0, y1) {
+    const g = ctx.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, ROYALE.gold0); g.addColorStop(0.5, ROYALE.gold1); g.addColorStop(1, ROYALE.gold2);
+    return g;
+  }
+  function chamfer(ctx, x, y, w, h, c) {
+    ctx.beginPath();
+    ctx.moveTo(x + c, y); ctx.lineTo(x + w - c, y); ctx.lineTo(x + w, y + c); ctx.lineTo(x + w, y + h - c);
+    ctx.lineTo(x + w - c, y + h); ctx.lineTo(x + c, y + h); ctx.lineTo(x, y + h - c); ctx.lineTo(x, y + c);
+    ctx.closePath();
+  }
+  function slant(ctx, x, y, w, h, k) {
+    ctx.beginPath();
+    ctx.moveTo(x + k, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w - k, y + h); ctx.lineTo(x, y + h);
+    ctx.closePath();
+  }
+  function goldPanel(ctx, s, path, y0, y1, fillTop = ROYALE.panel0, fillBottom = ROYALE.panel1) {
+    ctx.save();
+    path();
+    const g = ctx.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, fillTop); g.addColorStop(1, fillBottom);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 3 * s;
+    ctx.strokeStyle = gold(ctx, y0, y1);
+    ctx.shadowColor = ROYALE.gold1;
+    ctx.shadowBlur = 16 * s;
+    ctx.stroke();
+    ctx.restore();
+  }
+  function frameBackground(ctx, W, H) {
+    const s = H / 1080;
+    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, W * 0.75);
+    g.addColorStop(0, ROYALE.bg1); g.addColorStop(1, ROYALE.bg0);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // circuit traces in the corners
+    const traces = [[[18, 150], [18, 70], [70, 22], [250, 22]], [[1902, 150], [1902, 70], [1850, 22], [1690, 22]],
+      [[18, 930], [18, 1010], [70, 1058], [560, 1058]], [[1902, 930], [1902, 1010], [1850, 1058], [1360, 1058]],
+      [[60, 120], [150, 120], [190, 84]], [[1860, 120], [1770, 120], [1730, 84]],
+      [[150, 1018], [520, 1018], [545, 1000]], [[1770, 1018], [1400, 1018], [1375, 1000]]];
+    ctx.save();
+    ctx.lineWidth = 2 * s;
+    ctx.strokeStyle = "rgba(228,185,92,0.6)";
+    ctx.shadowColor = ROYALE.gold1;
+    ctx.shadowBlur = 10 * s;
+    for (const tr of traces) {
+      ctx.beginPath();
+      tr.forEach(([x, y], i) => (i ? ctx.lineTo(x * s, y * s) : ctx.moveTo(x * s, y * s)));
+      ctx.stroke();
+      const [ex, ey] = tr[tr.length - 1];
+      ctx.beginPath();
+      ctx.arc(ex * s, ey * s, 4 * s, 0, Math.PI * 2);
+      ctx.fillStyle = ROYALE.gold0;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function frameCard(ctx, s, x, y, w, h, p, st) {
+    goldPanel(ctx, s, () => chamfer(ctx, x, y, w, h, 26 * s), y, y + h);
+    const cx = x + w / 2, stt = st.stats[p];
+    text(ctx, RT, s, p, cx, y + 92 * s, 64, { color: ROYALE.text, align: "center", weight: 800 });
+    ctx.save();
+    ctx.fillStyle = gold(ctx, y + 110 * s, y + 114 * s);
+    ctx.fillRect(cx - 32 * s, y + 110 * s, 64 * s, 3 * s);
+    ctx.restore();
+    text(ctx, RT, s, String(stt.winners), cx, y + 278 * s, 170, { color: gold(ctx, y + 150 * s, y + 280 * s), align: "center", weight: 800 });
+    text(ctx, RT, s, "POINTS WON", cx, y + 318 * s, 19, { color: ROYALE.text, align: "center", weight: 700, spacing: 3 });
+    const small = [`${stt.shots} SHOT${stt.shots === 1 ? "" : "S"}`, stt.top ? `${Math.round(stt.top)} KM/H` : `${stt.smashes} SMASH${stt.smashes === 1 ? "" : "ES"}`].join("  ·  ");
+    text(ctx, RT, s, small, cx, y + 352 * s, 15, { color: ROYALE.sub, align: "center", weight: 600, spacing: 1 });
+    if (st.server && (st.server === p || st.server === st.teamOf(p)) && (p === "P1" || p === "P3")) {
+      text(ctx, RT, s, "SERVE", cx, y + 36 * s, 14, { color: ROYALE.lime, align: "center", weight: 800, spacing: 2 });
+    }
+  }
+  function drawFrame(ctx, W, H, st, opts = {}) {
+    const s = H / 1080, R = frameRect(W, H);
+    // gold window around the video
+    ctx.save();
+    rr(ctx, R.x, R.y, R.w, R.h, 10 * s);
+    ctx.lineWidth = 3 * s;
+    ctx.strokeStyle = gold(ctx, R.y, R.y + R.h);
+    ctx.shadowColor = ROYALE.gold1;
+    ctx.shadowBlur = 18 * s;
+    ctx.stroke();
+    ctx.restore();
+    // brand
+    const brand = st.brand || {};
+    const name = brand.name || "BADDY", accent = brand.accent || "AI";
+    ctx.save();
+    ctx.font = `800 ${Math.round(66 * s)}px ${ROYALE.font}`;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = `${4 * s}px`;
+    const nw = ctx.measureText(name + " ").width, aw = ctx.measureText(accent).width;
+    ctx.restore();
+    const bx = 470 * s - (nw + aw) / 2;
+    text(ctx, RT, s, name + " ", bx, 96 * s, 66, { color: "#E9E9E4", weight: 800, spacing: 4 });
+    text(ctx, RT, s, accent, bx + nw, 96 * s, 66, { color: ROYALE.lime, weight: 800, spacing: 4 });
+    if (brand.url !== "") text(ctx, RT, s, brand.url || "baddyai.com", 470 * s, 136 * s, 24, { color: ROYALE.text, align: "center", weight: 600, spacing: 3 });
+    // title banner
+    goldPanel(ctx, s, () => slant(ctx, 790 * s, 42 * s, 1010 * s, 96 * s, 60 * s), 42 * s, 138 * s, "#0f4a37", "#062419");
+    text(ctx, RT, s, `///  ${st.title}`, 1295 * s, 108 * s, 46, { color: gold(ctx, 70 * s, 110 * s), align: "center", weight: 800, spacing: 7 });
+    if (opts.hud !== false) {
+      // scoreboards: team A on the left, team B on the right
+      const cw = 222 * s, ch = 378 * s;
+      frameCard(ctx, s, 30 * s, 168 * s, cw, ch, "P1", st);
+      frameCard(ctx, s, 30 * s, 560 * s, cw, ch, "P2", st);
+      frameCard(ctx, s, W - 30 * s - cw, 168 * s, cw, ch, "P3", st);
+      frameCard(ctx, s, W - 30 * s - cw, 560 * s, cw, ch, "P4", st);
+      // bottom banner: team score, game, rally clock
+      goldPanel(ctx, s, () => slant(ctx, 610 * s, 966 * s, 700 * s, 92 * s, 46 * s), 966 * s, 1058 * s, "#0f4a37", "#062419");
+      const r = st.rally || st.lastRally;
+      const left = `P1+P2  ${st.score.A}`, right = `${st.score.B}  P3+P4`;
+      text(ctx, RT, s, left, 945 * s, 1012 * s, 34, { color: gold(ctx, 985 * s, 1015 * s), align: "right", weight: 800, spacing: 2 });
+      text(ctx, RT, s, ":", 960 * s, 1010 * s, 34, { color: ROYALE.text, align: "center", weight: 800 });
+      text(ctx, RT, s, right, 975 * s, 1012 * s, 34, { color: gold(ctx, 985 * s, 1015 * s), align: "left", weight: 800, spacing: 2 });
+      const foot = [st.game ? `GAME ${st.game}` : "", r ? `RALLY ${st.rallyNo}` : "", r ? clock((st.rally ? st.t : r.end) - r.start) : "", st.subtitle].filter(Boolean).join("   ·   ");
+      text(ctx, RT, s, foot, 960 * s, 1044 * s, 17, { color: ROYALE.sub, align: "center", weight: 700, spacing: 2 });
+      // last shot, top of the video window
+      if (st.last && st.t - st.last.t < 1.6 && st.last.by) {
+        const nm = STROKE_NAMES[st.last.stroke] || String(st.last.stroke || "SHOT").toUpperCase();
+        const label = [st.last.by, nm, st.last.kmh ? `${Math.round(st.last.kmh)} KM/H` : ""].filter(Boolean).join("  ·  ");
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, (1.6 - (st.t - st.last.t)) / 0.4);
+        goldPanel(ctx, s, () => slant(ctx, R.x + 24 * s, R.y + 22 * s, 420 * s, 54 * s, 26 * s), R.y + 22 * s, R.y + 76 * s, "#0f4a37", "#062419");
+        text(ctx, RT, s, label, R.x + 234 * s, R.y + 58 * s, 24, { color: ROYALE.text, align: "center", weight: 800, spacing: 2 });
+        ctx.restore();
+      }
+    }
+  }
+  function frameInsetFrame(ctx, W, H, p, rect) {
+    const s = H / 1080;
+    ctx.save();
+    ctx.lineWidth = 3 * s;
+    ctx.strokeStyle = gold(ctx, rect.y, rect.y + rect.h);
+    ctx.shadowColor = ROYALE.gold1;
+    ctx.shadowBlur = 14 * s;
+    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.restore();
+    goldPanel(ctx, s, () => slant(ctx, rect.x + 30 * s, rect.y + rect.h - 50 * s, rect.w - 30 * s, 50 * s, 24 * s), rect.y + rect.h - 50 * s, rect.y + rect.h, "#0f4a37", "#062419");
+    text(ctx, RT, s, `${p} FOCUS`, rect.x + 15 * s + rect.w / 2, rect.y + rect.h - 16 * s, 24, { color: ROYALE.text, align: "center", weight: 800, spacing: 3 });
+  }
+
+  return { COLORS, THEMES, PLAYERS, stateAt, draw, insetFrame, insetRect, clock,
+    frameRect, frameInsetRect, frameBackground, drawFrame, frameInsetFrame };
 })();
 if (typeof module !== "undefined") module.exports = hud;

@@ -19,7 +19,8 @@ This is the open part of [BaddyAI](https://baddyai.com)'s editor, made for the M
    - **Extra tracks**: rackets (or any other prompt) get their own glow.
    - **HUD**: title banner, rally number and clock, shots in the rally, P1 to P4 cards (shots, smashes, winners, top speed when measured), team score with the serving side, and a last-shot ticker.
    - **Player focus inset**: a picture-in-picture that follows the chosen player, cropped from their SAM box, with their outline.
-   - Three HUD styles (Broadcast glass, Neon, Retro LED) and **Export** to a video file.
+   - Two layouts. **Framed** (the default): the video sits in a gold window, P1 and P2 boards on the left, P3 and P4 on the right (points won, shots, smashes), a title banner, a bottom banner with the team score, game, rally number and clock, and the P1 focus inset in the corner. **Overlay**: the HUD drawn on the video itself, in three styles (Broadcast glass, Neon, Retro LED).
+   - **Export** to a video file.
 
 The picture and the masks always come from the same video frame (`requestVideoFrameCallback`), so outlines never lag a fast player.
 
@@ -59,11 +60,13 @@ The HUD only shows what the file contains. A value that is missing is left off, 
 
 ```json
 {
-  "title": "BADDYAI MATCH HUD",
-  "subtitle": "DOUBLES · GAME 1",
+  "title": "CIRCUIT ROYALE",
+  "subtitle": "DOUBLES",
+  "brand": { "name": "BADDY", "accent": "AI", "url": "baddyai.com" },
   "game": 1,
   "points_to_win": 21,
-  "start_score": { "A": 12, "B": 10 },
+  "start_score": { "A": 12, "B": 9 },
+  "start_points": { "P1": 7, "P2": 5, "P3": 6, "P4": 3 },
   "first_rally": 23,
   "players": { "P1": { "team": "A", "name": "" }, "P3": { "team": "B" } },
   "rallies": [
@@ -74,7 +77,7 @@ The HUD only shows what the file contains. A value that is missing is left off, 
 }
 ```
 
-Times are seconds in the clip. The score at any moment is `start_score` plus the winners of the rallies that have ended; the side that wins a rally serves the next one. See `examples/match.json` for a full sample (sample numbers, not a real match).
+Times are seconds in the clip. The score at any moment is `start_score` plus the winners of the rallies that have ended; the side that wins a rally serves the next one. A player's **points won** is `start_points` plus the rallies their side won where they hit the side's last shot. See `examples/match.json` for a full sample (sample numbers, not a real match).
 
 ## How SAM 3.1 is used
 

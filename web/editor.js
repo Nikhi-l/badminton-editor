@@ -21,6 +21,7 @@
     selected: null,
     fx: { spotlight: true, outline: true, hideOthers: true, objects: true, hud: true, inset: true },
     theme: "broadcast",
+    layout: "frame",           // "frame": boards beside the video; "overlay": HUD on the video
     focus: "P1",
     mw: 0, mh: 0,                 // mask (SAM) frame size
     lw: 0, lh: 0, q: 1,           // layer size: masks are composed at <= 960 px wide (q = layer px per mask px)
@@ -63,8 +64,7 @@
       if (video.src) URL.revokeObjectURL(video.src);
       video.src = URL.createObjectURL(vid);
       await new Promise((ok, bad) => { video.onloadeddata = ok; video.onerror = () => bad(new Error("this browser cannot play the video")); }).catch((e) => status(e.message));
-      canvas.width = video.videoWidth || 1280;
-      canvas.height = video.videoHeight || 720;
+      sizeCanvas();
       $("empty").hidden = true;
       ["play", "seek", "export"].forEach((id) => ($(id).disabled = false));
     }
@@ -180,15 +180,26 @@
   }
 
   /* ---------- one frame ---------- */
+  // where the video sits on the canvas: the whole canvas (overlay) or the framed window
+  const videoRect = () => (S.layout === "frame" ? hud.frameRect(canvas.width, canvas.height) : { x: 0, y: 0, w: canvas.width, h: canvas.height });
+  function sizeCanvas() {
+    if (S.layout === "frame") { canvas.width = 1920; canvas.height = 1080; }
+    else { canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720; }
+  }
   function render(t) {
     const W = canvas.width, H = canvas.height;
     if (!video.src) return;
-    ctx.drawImage(video, 0, 0, W, H);
+    const R = videoRect(), frame = S.layout === "frame";
+    if (frame) hud.frameBackground(ctx, W, H);
+    ctx.drawImage(video, R.x, R.y, R.w, R.h);
     const k = Math.round(t * S.fps);
     let boxes = {};
     if (S.people && S.mw) {
       boxes = buildLayers(k);
-      const blurPx = Math.max(2, Math.round(W / 320));
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(R.x, R.y, R.w, R.h);
+      ctx.clip();
       if (S.fx.hideOthers) {
         const w = L.work;
         w.x.globalCompositeOperation = "source-over";
@@ -201,7 +212,7 @@
         w.x.drawImage(L.others.c, 0, 0);
         w.x.filter = "none";
         w.x.globalCompositeOperation = "source-over";
-        ctx.drawImage(w.c, 0, 0, W, H);
+        ctx.drawImage(w.c, R.x, R.y, R.w, R.h);
       }
       if (S.fx.spotlight && S.roles.size) {
         const d = L.dim;
@@ -215,20 +226,22 @@
         if (S.fx.objects) d.x.drawImage(L.extra.c, 0, 0);
         d.x.filter = "none";
         d.x.globalCompositeOperation = "source-over";
-        ctx.drawImage(d.c, 0, 0, W, H);
+        ctx.drawImage(d.c, R.x, R.y, R.w, R.h);
       }
       if (S.fx.outline) {
         glow(L.players.c, Math.round(S.lw / 200));
-        ctx.drawImage(L.glow.c, 0, 0, W, H);
-        ctx.drawImage(L.glow.c, 0, 0, W, H);
-        ctx.save(); ctx.globalAlpha = 0.16; ctx.drawImage(L.players.c, 0, 0, W, H); ctx.restore();
-        if (S.fx.objects && S.extra.length) { glow(L.extra.c, Math.round(S.lw / 320)); ctx.drawImage(L.glow.c, 0, 0, W, H); }
+        ctx.drawImage(L.glow.c, R.x, R.y, R.w, R.h);
+        ctx.drawImage(L.glow.c, R.x, R.y, R.w, R.h);
+        ctx.save(); ctx.globalAlpha = 0.16; ctx.drawImage(L.players.c, R.x, R.y, R.w, R.h); ctx.restore();
+        if (S.fx.objects && S.extra.length) { glow(L.extra.c, Math.round(S.lw / 320)); ctx.drawImage(L.glow.c, R.x, R.y, R.w, R.h); }
       }
-      if (S.selected != null) outlineBox(k, blurPx);
+      if (S.selected != null) outlineBox(k, R);
+      ctx.restore();
     }
     const st = hud.stateAt(S.match, t);
     if (S.fx.inset && boxes[S.focus]) inset(boxes[S.focus], st);
-    if (S.fx.hud) hud.draw(ctx, W, H, st, S.theme);
+    if (frame) hud.drawFrame(ctx, W, H, st, { hud: S.fx.hud });
+    else if (S.fx.hud) hud.draw(ctx, W, H, st, S.theme);
     $("clock").textContent = hud.clock(t);
     if (!S.dragging && video.duration) $("seek").value = String(Math.round((t / video.duration) * 1000));
   }
@@ -244,24 +257,26 @@
     g.x.drawImage(src, 0, 0);
     g.x.globalCompositeOperation = "source-over";
   }
-  function outlineBox(k, px) {
+  function outlineBox(k, R) {
     const r = (S.people.get(k) || []).find((x) => x.id === S.selected);
     if (!r) return;
-    const sx = canvas.width / S.mw, sy = canvas.height / S.mh;
+    const sx = R.w / S.mw, sy = R.h / S.mh;
     ctx.save();
     ctx.setLineDash([8 * sx, 6 * sx]);
-    ctx.lineWidth = px;
+    ctx.lineWidth = Math.max(2, Math.round(R.w / 320));
     ctx.strokeStyle = "#ffffff";
-    ctx.strokeRect(r.x1 * sx, r.y1 * sy, (r.x2 - r.x1 + 1) * sx, (r.y2 - r.y1 + 1) * sy);
+    ctx.strokeRect(R.x + r.x1 * sx, R.y + r.y1 * sy, (r.x2 - r.x1 + 1) * sx, (r.y2 - r.y1 + 1) * sy);
     ctx.restore();
   }
   function inset(r, st) {
-    const W = canvas.width, H = canvas.height, rect = hud.insetRect(W, H);
+    const W = canvas.width, H = canvas.height, frame = S.layout === "frame";
+    const rect = frame ? hud.frameInsetRect(W, H) : hud.insetRect(W, H);
     const vx = video.videoWidth / S.mw, vy = video.videoHeight / S.mh;
     // crop around the player, padded, at the inset's aspect ratio
     const cx = (r.x1 + r.x2 + 1) / 2 * vx, cy = (r.y1 + r.y2 + 1) / 2 * vy;
-    let ch = (r.y2 - r.y1 + 1) * vy * 1.5, cw = ch * (rect.w / rect.h);
-    cw = Math.max(cw, (r.x2 - r.x1 + 1) * vx * 1.6); ch = cw * (rect.h / rect.w);
+    let ch = (r.y2 - r.y1 + 1) * vy * 1.35, cw = ch * (rect.w / rect.h);
+    cw = Math.max(cw, (r.x2 - r.x1 + 1) * vx * 1.5); ch = cw * (rect.h / rect.w);
+    cw = Math.min(cw, video.videoWidth); ch = Math.min(ch, video.videoHeight);
     const x = Math.min(Math.max(0, cx - cw / 2), video.videoWidth - cw), y = Math.min(Math.max(0, cy - ch / 2), video.videoHeight - ch);
     ctx.save();
     ctx.beginPath();
@@ -275,6 +290,7 @@
       ctx.drawImage(L.glow.c, (x / vx) * S.q, (y / vy) * S.q, (cw / vx) * S.q, (ch / vy) * S.q, rect.x, rect.y, rect.w, rect.h);
     }
     ctx.restore();
+    if (frame) { hud.frameInsetFrame(ctx, W, H, S.focus, rect); return; }
     const p = st.stats[S.focus];
     const cap = p ? [`SHOTS ${p.shots}`, `SMASHES ${p.smashes}`, p.top ? `TOP ${Math.round(p.top)} KM/H` : ""].filter(Boolean).join("  ·  ") : "";
     hud.insetFrame(ctx, W, H, S.theme, S.focus, rect, cap);
@@ -299,6 +315,7 @@
   /* ---------- controls ---------- */
   document.querySelectorAll("[data-fx]").forEach((cb) => (cb.onchange = () => { S.fx[cb.dataset.fx] = cb.checked; render(video.currentTime); }));
   $("theme").onchange = (e) => { S.theme = e.target.value; render(video.currentTime); };
+  $("layout").onchange = (e) => { S.layout = e.target.value; sizeCanvas(); render(video.currentTime); };
   $("focus").onchange = (e) => { S.focus = e.target.value; render(video.currentTime); };
   $("files").onchange = (e) => openFiles(e.target.files);
   const drop = $("drop");
@@ -312,7 +329,8 @@
     const b = canvas.getBoundingClientRect();
     const scale = Math.min(b.width / canvas.width, b.height / canvas.height);
     const ox = (b.width - canvas.width * scale) / 2, oy = (b.height - canvas.height * scale) / 2;
-    const mx = ((e.clientX - b.left - ox) / scale) * (S.mw / canvas.width), my = ((e.clientY - b.top - oy) / scale) * (S.mh / canvas.height);
+    const R = videoRect();
+    const mx = (((e.clientX - b.left - ox) / scale - R.x) / R.w) * S.mw, my = (((e.clientY - b.top - oy) / scale - R.y) / R.h) * S.mh;
     const k = Math.round(video.currentTime * S.fps);
     const hit = (S.people.get(k) || []).filter((r) => mx >= r.x1 && mx <= r.x2 && my >= r.y1 && my <= r.y2)
       .find((r) => raster("p", k, r)[Math.floor(((my - r.y1) / (r.y2 - r.y1 + 1)) * r.mh) * r.mw + Math.floor(((mx - r.x1) / (r.x2 - r.x1 + 1)) * r.mw)]);

@@ -1,45 +1,153 @@
 {
-  "title": "BADDYAI MATCH HUD",
-  "subtitle": "DOUBLES  ·  GAME 1  ·  SAMPLE DATA",
+  "title": "CIRCUIT ROYALE",
+  "subtitle": "SAMPLE DATA",
+  "brand": {
+    "name": "BADDY",
+    "accent": "AI",
+    "url": "baddyai.com"
+  },
   "game": 1,
   "points_to_win": 21,
-  "start_score": { "A": 12, "B": 10 },
+  "start_score": {
+    "A": 12,
+    "B": 9
+  },
+  "start_points": {
+    "P1": 7,
+    "P2": 5,
+    "P3": 6,
+    "P4": 3
+  },
   "first_rally": 23,
   "first_server": "A",
   "players": {
-    "P1": { "team": "A", "name": "" },
-    "P2": { "team": "A", "name": "" },
-    "P3": { "team": "B", "name": "" },
-    "P4": { "team": "B", "name": "" }
+    "P1": {
+      "team": "A",
+      "name": ""
+    },
+    "P2": {
+      "team": "A",
+      "name": ""
+    },
+    "P3": {
+      "team": "B",
+      "name": ""
+    },
+    "P4": {
+      "team": "B",
+      "name": ""
+    }
   },
   "rallies": [
     {
-      "start": 0.3, "end": 14.6, "server": "A", "winner": "A",
+      "start": 0.3,
+      "end": 14.6,
+      "server": "A",
+      "winner": "A",
       "shots": [
-        { "t": 0.6, "by": "P1", "stroke": "serve" },
-        { "t": 1.7, "by": "P3", "stroke": "lift" },
-        { "t": 3.0, "by": "P2", "stroke": "smash" },
-        { "t": 3.8, "by": "P4", "stroke": "block" },
-        { "t": 4.9, "by": "P1", "stroke": "net_shot" },
-        { "t": 6.1, "by": "P3", "stroke": "lift" },
-        { "t": 7.4, "by": "P2", "stroke": "smash" },
-        { "t": 8.2, "by": "P4", "stroke": "drive" },
-        { "t": 9.0, "by": "P1", "stroke": "drive" },
-        { "t": 10.3, "by": "P3", "stroke": "clear" },
-        { "t": 11.9, "by": "P2", "stroke": "smash" },
-        { "t": 12.8, "by": "P3", "stroke": "lift" },
-        { "t": 13.9, "by": "P1", "stroke": "kill" }
+        {
+          "t": 0.6,
+          "by": "P1",
+          "stroke": "serve"
+        },
+        {
+          "t": 1.7,
+          "by": "P3",
+          "stroke": "lift"
+        },
+        {
+          "t": 3.0,
+          "by": "P2",
+          "stroke": "smash"
+        },
+        {
+          "t": 3.8,
+          "by": "P4",
+          "stroke": "block"
+        },
+        {
+          "t": 4.9,
+          "by": "P1",
+          "stroke": "net_shot"
+        },
+        {
+          "t": 6.1,
+          "by": "P3",
+          "stroke": "lift"
+        },
+        {
+          "t": 7.4,
+          "by": "P2",
+          "stroke": "smash"
+        },
+        {
+          "t": 8.2,
+          "by": "P4",
+          "stroke": "drive"
+        },
+        {
+          "t": 9.0,
+          "by": "P1",
+          "stroke": "drive"
+        },
+        {
+          "t": 10.3,
+          "by": "P3",
+          "stroke": "clear"
+        },
+        {
+          "t": 11.9,
+          "by": "P2",
+          "stroke": "smash"
+        },
+        {
+          "t": 12.8,
+          "by": "P3",
+          "stroke": "lift"
+        },
+        {
+          "t": 13.9,
+          "by": "P1",
+          "stroke": "kill"
+        }
       ]
     },
     {
-      "start": 18.0, "end": 24.5, "server": "A", "winner": "B",
+      "start": 18.0,
+      "end": 24.5,
+      "server": "A",
+      "winner": "B",
       "shots": [
-        { "t": 18.3, "by": "P2", "stroke": "serve" },
-        { "t": 19.4, "by": "P4", "stroke": "push" },
-        { "t": 20.6, "by": "P1", "stroke": "lift" },
-        { "t": 22.1, "by": "P3", "stroke": "smash" },
-        { "t": 22.9, "by": "P2", "stroke": "block" },
-        { "t": 24.0, "by": "P4", "stroke": "kill" }
+        {
+          "t": 18.3,
+          "by": "P2",
+          "stroke": "serve"
+        },
+        {
+          "t": 19.4,
+          "by": "P4",
+          "stroke": "push"
+        },
+        {
+          "t": 20.6,
+          "by": "P1",
+          "stroke": "lift"
+        },
+        {
+          "t": 22.1,
+          "by": "P3",
+          "stroke": "smash"
+        },
+        {
+          "t": 22.9,
+          "by": "P2",
+          "stroke": "block"
+        },
+        {
+          "t": 24.0,
+          "by": "P4",
+          "stroke": "kill"
+        }
       ]
     }
   ]
