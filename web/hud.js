@@ -76,14 +76,14 @@ const hud = (() => {
     ctx.stroke();
     ctx.restore();
   }
-  function text(ctx, th, s, str, x, y, size, { color, weight = 700, align = "left", glow = false, spacing = 0 } = {}) {
+  // text is always flat and sharp: no shadow or glow behind letters, in every style
+  function text(ctx, th, s, str, x, y, size, { color, weight = 700, align = "left", spacing = 0 } = {}) {
     ctx.save();
     ctx.font = `${weight} ${Math.round(size * s)}px ${th.font}`;
     ctx.textAlign = align;
     ctx.textBaseline = "alphabetic";
     if ("letterSpacing" in ctx) ctx.letterSpacing = `${spacing * s}px`;
     ctx.fillStyle = color || th.text;
-    if (glow && th.glow) { ctx.shadowColor = color || th.accent; ctx.shadowBlur = th.glow * s; }
     ctx.fillText(str, x, y);
     ctx.restore();
   }
@@ -104,8 +104,8 @@ const hud = (() => {
     // title banner
     const bw = 760 * s, bh = st.subtitle ? 96 * s : 70 * s, bx = (W - bw) / 2, by = 26 * s;
     panel(ctx, th, s, bx, by, bw, bh);
-    text(ctx, th, s, st.title, W / 2, by + 48 * s, 38, { color: th.accent, align: "center", weight: 800, glow: true, spacing: 2 });
-    if (st.subtitle) text(ctx, th, s, st.subtitle, W / 2, by + 82 * s, 21, { color: th.sub, align: "center", weight: 600, spacing: 1.5 });
+    text(ctx, th, s, st.title, W / 2, by + 48 * s, 38, { color: th.accent, align: "center", weight: 800, spacing: 2 });
+    if (st.subtitle) text(ctx, th, s, st.subtitle, W / 2, by + 83 * s, 24, { color: th.text, align: "center", weight: 700, spacing: 1.5 });
 
     // rally clock (top left)
     const r = st.rally || st.lastRally;
@@ -115,7 +115,7 @@ const hud = (() => {
       const shots = (r.shots || []).filter((x) => x.t <= st.t).length;
       panel(ctx, th, s, M, by, 330 * s, 96 * s);
       text(ctx, th, s, live ? `RALLY ${st.rallyNo}` : `RALLY ${st.rallyNo} DONE`, M + 22 * s, by + 34 * s, 20, { color: th.sub, weight: 700, spacing: 1.5 });
-      text(ctx, th, s, clock(dur), M + 22 * s, by + 80 * s, 40, { color: th.text, weight: 800, glow: true });
+      text(ctx, th, s, clock(dur), M + 22 * s, by + 80 * s, 40, { color: th.text, weight: 800 });
       text(ctx, th, s, `${shots} SHOTS`, M + 308 * s, by + 80 * s, 20, { color: th.accent, align: "right", weight: 700 });
     }
 
@@ -129,9 +129,9 @@ const hud = (() => {
     if (sw > 200 * s) {
       panel(ctx, th, s, cx0, cy, sw, ch);
       const mid = cx0 + sw / 2;
-      text(ctx, th, s, String(st.score.A), mid - 26 * s, cy + 104 * s, 92, { color: COLORS.P1, align: "right", weight: 800, glow: true });
+      text(ctx, th, s, String(st.score.A), mid - 26 * s, cy + 104 * s, 92, { color: COLORS.P1, align: "right", weight: 800 });
       text(ctx, th, s, ":", mid, cy + 96 * s, 64, { color: th.sub, align: "center", weight: 700 });
-      text(ctx, th, s, String(st.score.B), mid + 26 * s, cy + 104 * s, 92, { color: COLORS.P3, align: "left", weight: 800, glow: true });
+      text(ctx, th, s, String(st.score.B), mid + 26 * s, cy + 104 * s, 92, { color: COLORS.P3, align: "left", weight: 800 });
       text(ctx, th, s, "P1 + P2", cx0 + 18 * s, cy + 32 * s, 17, { color: th.sub, weight: 700, spacing: 1 });
       text(ctx, th, s, "P3 + P4", cx1 - 18 * s, cy + 32 * s, 17, { color: th.sub, align: "right", weight: 700, spacing: 1 });
       const foot = [st.game ? `GAME ${st.game}` : "", `TO ${st.target}`].filter(Boolean).join("  ·  ");
@@ -152,7 +152,7 @@ const hud = (() => {
       ctx.save();
       ctx.globalAlpha = a;
       panel(ctx, th, s, tx, ty, tw, 52 * s, COLORS[st.last.by]);
-      text(ctx, th, s, label, W / 2, ty + 35 * s, 24, { color: COLORS[st.last.by] || th.accent, align: "center", weight: 800, glow: true, spacing: 1 });
+      text(ctx, th, s, label, W / 2, ty + 35 * s, 24, { color: COLORS[st.last.by] || th.accent, align: "center", weight: 800, spacing: 1 });
       ctx.restore();
     }
   }
@@ -172,6 +172,11 @@ const hud = (() => {
       text(ctx, th, s, label, x + 18 * s, yy, 17, { color: th.sub, weight: 600, spacing: 1 });
       text(ctx, th, s, val, x + w - 18 * s, yy, 21, { color: th.text, align: "right", weight: 800 });
     };
+    if (!st.hasShots) {   // no shot data: the one number we have is points won
+      text(ctx, th, s, String(stt.winners), x + w - 22 * s, y + h - 26 * s, 64, { color: c, align: "right", weight: 800 });
+      text(ctx, th, s, "POINTS WON", x + 18 * s, y + h - 30 * s, 17, { color: th.sub, weight: 700, spacing: 1.5 });
+      return;
+    }
     row("SHOTS", String(stt.shots), 0);
     row("SMASHES", String(stt.smashes), 1);
     row(stt.top ? "TOP SPEED" : "WINNERS", stt.top ? `${Math.round(stt.top)} km/h` : String(stt.winners), 2);

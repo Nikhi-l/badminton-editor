@@ -1,4 +1,4 @@
-# Badminton Editor
+# Baddy Editor
 
 A video editor for badminton that puts a match HUD over the footage: a title banner, a rally clock, a scoreboard for each of the four players (P1 to P4), the team score, the last shot, and a zoomed player focus inset. The players are found and followed with **Meta SAM 3.1**, so the editor can light them up, outline them and blur everyone else in the hall.
 

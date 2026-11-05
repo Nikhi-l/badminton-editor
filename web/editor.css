@@ -58,3 +58,4 @@ select { background: #0e1411; color: var(--text); border: 1px solid var(--line);
 code { background: #1a221e; padding: 1px 5px; border-radius: 4px; }
 /* the source video stays in the render tree (so frame callbacks keep firing) but out of sight */
 .source { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.row select { max-width: 62%; }
